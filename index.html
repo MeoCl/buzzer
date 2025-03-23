@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzzer Web</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        .container { margin-top: 50px; }
+        .buzzer { font-size: 24px; padding: 20px; background-color: red; color: white; border: none; cursor: pointer; }
+        .buzzer:disabled { background-color: gray; cursor: not-allowed; }
+        .leaderboard { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Trò Chơi Bấm Chuông</h1>
+        <input type="text" id="playerName" placeholder="Nhập tên bạn">
+        <button id="startGame">Bắt đầu</button>
+        <br><br>
+        <button id="buzzer" class="buzzer" disabled>Bấm Ngay!</button>
+        <button id="reset" style="margin-left:10px;">Reset</button>
+        <p id="result"></p>
+        <h2>Bảng Xếp Hạng</h2>
+        <ul id="leaderboard" class="leaderboard"></ul>
+    </div>
+
+    <script>
+        // Cấu hình Firebase (Thay thế bằng thông tin của bạn)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Khởi tạo Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let playerName = "";
+        const buzzerButton = document.getElementById("buzzer");
+        const startButton = document.getElementById("startGame");
+        const resetButton = document.getElementById("reset");
+
+        // Nhấn nút "Bắt đầu"
+        startButton.addEventListener("click", function() {
+            playerName = document.getElementById("playerName").value.trim();
+            if (playerName === "") {
+                alert("Vui lòng nhập tên!");
+                return;
+            }
+            buzzerButton.disabled = false;
+            document.getElementById("result").innerText = "";
+        });
+
+        // Nhấn chuông
+        buzzerButton.addEventListener("click", function() {
+            buzzerButton.disabled = true;
+            const time = new Date().toLocaleTimeString();
+
+            // Gửi dữ liệu lên Firebase
+            db.ref("leaderboard").push({
+                name: playerName,
+                time: time
+            });
+
+            document.getElementById("result").innerText = `🎉 ${playerName} đã bấm đầu tiên lúc ${time}!`;
+        });
+
+        // Reset bảng xếp hạng
+        resetButton.addEventListener("click", function() {
+            db.ref("leaderboard").remove(); // Xóa dữ liệu trên Firebase
+            document.getElementById("leaderboard").innerHTML = ""; // Xóa hiển thị trên web
+            buzzerButton.disabled = false;
+        });
+
+        // Lắng nghe thay đổi từ Firebase
+        db.ref("leaderboard").on("value", function(snapshot) {
+            const leaderboard = document.getElementById("leaderboard");
+            leaderboard.innerHTML = "";
+
+            snapshot.forEach(function(childSnapshot) {
+                const data = childSnapshot.val();
+                const li = document.createElement("li");
+                li.innerText = `${data.name} - ${data.time}`;
+                leaderboard.appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>
