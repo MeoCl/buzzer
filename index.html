@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzzer Web</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        .container { margin-top: 50px; }
+        .buzzer { font-size: 24px; padding: 20px; background-color: red; color: white; border: none; cursor: pointer; }
+        .buzzer:disabled { background-color: gray; cursor: not-allowed; }
+        .leaderboard { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Trò Chơi Bấm Chuông</h1>
+        <input type="text" id="playerName" placeholder="Nhập tên bạn">
+        <button id="startGame">Bắt đầu</button>
+        <br><br>
+        <button id="buzzer" class="buzzer" disabled>Bấm Ngay!</button>
+        <p id="result"></p>
+        <h2>Bảng Xếp Hạng</h2>
+        <ul id="leaderboard" class="leaderboard"></ul>
+    </div>
+
+    <script>
+        let firstClick = false;
+        let playerName = "";
+        let leaderboard = [];
+
+        document.getElementById("startGame").addEventListener("click", function() {
+            playerName = document.getElementById("playerName").value.trim();
+            if (playerName === "") {
+                alert("Vui lòng nhập tên!");
+                return;
+            }
+            firstClick = false;
+            document.getElementById("buzzer").disabled = false;
+            document.getElementById("result").innerText = "";
+        });
+
+        document.getElementById("buzzer").addEventListener("click", function() {
+            if (!firstClick) {
+                firstClick = true;
+                let time = new Date().toLocaleTimeString();
+                document.getElementById("result").innerText = `🎉 ${playerName} đã bấm đầu tiên lúc ${time}!`;
+                document.getElementById("buzzer").disabled = true;
+                updateLeaderboard(playerName);
+            }
+        });
+
+        function updateLeaderboard(name) {
+            leaderboard.push(name);
+            let list = document.getElementById("leaderboard");
+            list.innerHTML = "";
+            leaderboard.forEach((player, index) => {
+                let li = document.createElement("li");
+                li.innerText = `${index + 1}. ${player}`;
+                list.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
